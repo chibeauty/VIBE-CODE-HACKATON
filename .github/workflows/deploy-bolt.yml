@@ -1,0 +1,157 @@
+name: Deploy to Bolt.new
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: 
+      - 'README.md'
+      - 'docs/**'
+      - '*.md'
+      - '.github/**'
+  
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test & Build
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run linting
+        run: npm run lint
+      
+      - name: Run type checking
+        run: npm run type-check
+      
+      - name: Run tests
+        run: npm run test
+        env:
+          CI: true
+      
+      - name: Build application
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files
+          path: .next/
+          retention-days: 1
+
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Bolt.new
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-files
+          path: .next/
+      
+      - name: Deploy to Bolt.new
+        run: |
+          echo "🚀 Deploying Career Guidance Assistant to Bolt.new..."
+          
+          # Install Bolt CLI (if available)
+          # npm install -g @bolt.new/cli
+          
+          # Deploy using Bolt.new API or webhook
+          curl -X POST "${{ secrets.BOLT_DEPLOY_WEBHOOK_URL }}" \
+            -H "Authorization: Bearer ${{ secrets.BOLT_DEPLOY_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "ref": "${{ github.sha }}",
+              "branch": "${{ github.ref_name }}",
+              "environment": "production",
+              "project": "career-guidance-assistant"
+            }'
+      
+      - name: Wait for deployment
+        run: |
+          echo "⏳ Waiting for deployment to complete..."
+          sleep 30
+      
+      - name: Verify deployment
+        run: |
+          echo "🔍 Verifying deployment health..."
+          
+          # Test health endpoint
+          HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://career-guidance.bolt.new/api/health)
+          
+          if [ "$HEALTH_STATUS" = "200" ]; then
+            echo "✅ Health check passed"
+          else
+            echo "❌ Health check failed with status: $HEALTH_STATUS"
+            exit 1
+          fi
+          
+          # Test Supabase connection
+          SUPABASE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://career-guidance.bolt.new/api/supabase-health)
+          
+          if [ "$SUPABASE_STATUS" = "200" ]; then
+            echo "✅ Supabase connection verified"
+          else
+            echo "⚠️ Supabase connection issue (status: $SUPABASE_STATUS)"
+          fi
+      
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "🎉 Deployment successful!"
+            echo "🌐 Demo URL: https://career-guidance.bolt.new"
+            echo "📊 Health: https://career-guidance.bolt.new/api/health"
+          else
+            echo "💥 Deployment failed!"
+            echo "📋 Check logs for details"
+            exit 1
+          fi
+
+  notify:
+    runs-on: ubuntu-latest
+    name: Notify Team
+    needs: [test, deploy]
+    if: always()
+    
+    steps:
+      - name: Deployment notification
+        run: |
+          if [ "${{ needs.deploy.result }}" == "success" ]; then
+            echo "✅ Career Guidance Assistant deployed successfully"
+            echo "🔗 Live Demo: https://career-guidance.bolt.new"
+            echo "📈 Monitor: https://bolt.new/dashboard/career-guidance-assistant"
+          else
+            echo "❌ Deployment failed - check logs"
+            echo "🔧 Troubleshooting guide: /deployment/environment-setup.md"
+          fi

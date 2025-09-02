@@ -1,0 +1,236 @@
+# Bolt.new Deployment Configuration
+# Career Guidance Assistant - Full-Stack Hackathon Project
+
+name: career-guidance-assistant
+version: 1.0.0
+description: AI-powered career guidance platform for students
+
+# Build Configuration
+build:
+  framework: nextjs
+  node_version: "18.x"
+  package_manager: npm
+  
+  # Build Commands
+  commands:
+    install: npm ci
+    build: npm run build
+    test: npm run test
+    lint: npm run lint
+    type-check: npm run type-check
+  
+  # Build Optimization
+  optimization:
+    minify: true
+    tree_shaking: true
+    code_splitting: true
+    compression: gzip
+    
+  # Static Assets
+  public_dir: public
+  output_dir: .next
+  
+  # Build Environment
+  environment:
+    NODE_ENV: production
+    NEXT_TELEMETRY_DISABLED: 1
+
+# Deployment Configuration
+deploy:
+  # Auto-deployment
+  auto_deploy:
+    enabled: true
+    branch: main
+    on_push: true
+    on_pr: false
+  
+  # Domain & SSL
+  domain:
+    custom_domain: career-guidance.bolt.new
+    enforce_https: true
+    ssl_certificate: auto
+    redirect_www: true
+  
+  # Performance
+  cdn:
+    enabled: true
+    cache_control: "public, max-age=31536000, immutable"
+    compression: true
+  
+  # Headers
+  headers:
+    - source: "/(.*)"
+      headers:
+        - key: "X-Frame-Options"
+          value: "DENY"
+        - key: "X-Content-Type-Options"
+          value: "nosniff"
+        - key: "Referrer-Policy"
+          value: "strict-origin-when-cross-origin"
+        - key: "Permissions-Policy"
+          value: "camera=(), microphone=(), geolocation=()"
+
+# Environment Variables Configuration
+environment:
+  # Supabase Configuration
+  NEXT_PUBLIC_SUPABASE_URL:
+    required: true
+    description: "Supabase project URL"
+    example: "https://your-project.supabase.co"
+  
+  NEXT_PUBLIC_SUPABASE_ANON_KEY:
+    required: true
+    description: "Supabase anonymous/public key"
+    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  
+  SUPABASE_SERVICE_ROLE_KEY:
+    required: true
+    secret: true
+    description: "Supabase service role key (server-side only)"
+    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  
+  # IntaSend Payment Configuration
+  INTASEND_API_KEY:
+    required: true
+    secret: true
+    description: "IntaSend API key for payment processing"
+    example: "ISSecretKey_test_..."
+  
+  INTASEND_WEBHOOK_SECRET:
+    required: true
+    secret: true
+    description: "IntaSend webhook secret for signature verification"
+    example: "webhook_secret_..."
+  
+  # Application Configuration
+  JWT_SECRET:
+    required: true
+    secret: true
+    description: "JWT secret for token signing"
+    example: "your-super-secret-jwt-key-here"
+  
+  NEXT_PUBLIC_APP_URL:
+    required: true
+    description: "Application base URL"
+    example: "https://career-guidance.bolt.new"
+  
+  # Optional Configuration
+  NODE_ENV:
+    default: "production"
+    description: "Node.js environment"
+  
+  NEXT_PUBLIC_ANALYTICS_ID:
+    required: false
+    description: "Analytics tracking ID"
+
+# Monitoring & Logging
+monitoring:
+  # Error Tracking
+  error_tracking:
+    enabled: true
+    service: bolt_monitoring
+    sample_rate: 1.0
+  
+  # Performance Monitoring
+  performance:
+    enabled: true
+    core_web_vitals: true
+    real_user_monitoring: true
+  
+  # Logging
+  logging:
+    level: info
+    retention_days: 30
+    structured: true
+    
+  # Health Checks
+  health_checks:
+    - path: "/api/health"
+      interval: 60
+      timeout: 10
+      retries: 3
+    - path: "/api/supabase-health"
+      interval: 300
+      timeout: 15
+      retries: 2
+
+# Rollback Configuration
+rollback:
+  enabled: true
+  auto_rollback:
+    enabled: true
+    error_threshold: 5
+    time_window: 300
+  
+  # Deployment History
+  keep_deployments: 10
+  rollback_timeout: 300
+
+# GitHub Integration
+github:
+  repository: "your-username/career-guidance-assistant"
+  branch: main
+  
+  # Deployment Triggers
+  triggers:
+    push:
+      branches: [main]
+      paths_ignore: ["README.md", "docs/**", "*.md"]
+    
+    pull_request:
+      branches: [main]
+      deploy_preview: true
+  
+  # Status Checks
+  status_checks:
+    required: ["build", "test", "lint"]
+    strict: true
+
+# Security Configuration
+security:
+  # Content Security Policy
+  csp:
+    enabled: true
+    directives:
+      default-src: "'self'"
+      script-src: "'self' 'unsafe-inline' https://js.intasend.com"
+      style-src: "'self' 'unsafe-inline' https://fonts.googleapis.com"
+      font-src: "'self' https://fonts.gstatic.com"
+      img-src: "'self' data: https:"
+      connect-src: "'self' https://*.supabase.co https://api.intasend.com"
+  
+  # Rate Limiting
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 100
+    burst_limit: 200
+  
+  # DDoS Protection
+  ddos_protection:
+    enabled: true
+    threshold: 1000
+
+# Preview Deployments
+preview:
+  enabled: true
+  auto_delete: true
+  retention_days: 7
+  password_protection: false
+
+# Notifications
+notifications:
+  # Deployment Status
+  deployment:
+    slack:
+      enabled: false
+      webhook_url: ""
+    
+    email:
+      enabled: true
+      recipients: ["team@careerpath.com"]
+  
+  # Error Alerts
+  alerts:
+    error_rate_threshold: 5
+    response_time_threshold: 5000
+    uptime_threshold: 99.5

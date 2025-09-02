@@ -1,0 +1,63 @@
+# Production Environment Variables for Career Guidance Assistant
+# Copy this file to your Bolt.new environment configuration
+
+# ==============================================
+# SUPABASE CONFIGURATION (Required)
+# ==============================================
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# ==============================================
+# INTASEND PAYMENT CONFIGURATION (Required)
+# ==============================================
+INTASEND_API_KEY=ISSecretKey_live_...
+INTASEND_WEBHOOK_SECRET=your_webhook_secret_from_intasend_dashboard
+
+# ==============================================
+# APPLICATION CONFIGURATION (Required)
+# ==============================================
+JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters-long
+NEXT_PUBLIC_APP_URL=https://career-guidance.bolt.new
+
+# ==============================================
+# OPTIONAL CONFIGURATION
+# ==============================================
+NODE_ENV=production
+NEXT_TELEMETRY_DISABLED=1
+
+# Analytics (Optional)
+NEXT_PUBLIC_ANALYTICS_ID=your_analytics_id
+
+# Error Tracking (Optional)
+SENTRY_DSN=your_sentry_dsn
+SENTRY_ORG=your_sentry_org
+SENTRY_PROJECT=career-guidance-assistant
+
+# ==============================================
+# BOLT.NEW SPECIFIC CONFIGURATION
+# ==============================================
+# These are automatically set by Bolt.new
+BOLT_PROJECT_ID=auto_generated
+BOLT_DEPLOYMENT_ID=auto_generated
+BOLT_ENVIRONMENT=production
+
+# ==============================================
+# SECURITY NOTES
+# ==============================================
+# 1. Never commit this file with real values to version control
+# 2. Mark all *_KEY, *_SECRET, and JWT_SECRET as "Secret" in Bolt.new
+# 3. Use strong, unique values for all secrets
+# 4. Rotate secrets regularly (quarterly recommended)
+# 5. Monitor access logs for unauthorized usage
+
+# ==============================================
+# VALIDATION CHECKLIST
+# ==============================================
+# Before deployment, verify:
+# ✓ All required variables have values
+# ✓ Supabase URL is accessible
+# ✓ IntaSend API key is valid
+# ✓ JWT secret is 32+ characters
+# ✓ App URL matches your domain
+# ✓ No placeholder values remain
