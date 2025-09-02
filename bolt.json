@@ -1,0 +1,30 @@
+{
+  "name": "VIBE-CODE-HACKATON",
+  "deploy": {
+    "platform": "bolt.new",
+    "source": "github",
+    "repository": "https://github.com/chibeauty/VIBE-CODE-HACKATON",
+    "branch": "main",
+    "build": {
+      "frontend": {
+        "framework": "react",
+        "path": "./frontend",              
+        "buildCommand": "npm install && npm run build",
+        "outputDir": "build",
+        "serveDir": "build"
+      },
+      "backend": {
+        "framework": "node",
+        "path": "./supabase/functions",
+        "startCommand": "npm install && npm start"
+      }
+    },
+    "env": {
+      "SUPABASE_URL": "${SUPABASE_URL}",
+      "SUPABASE_ANON_KEY": "${SUPABASE_ANON_KEY}",
+      "SUPABASE_SERVICE_ROLE_KEY": "${SUPABASE_SERVICE_ROLE_KEY}",
+      "INTASEND_API_KEY": "${INTASEND_API_KEY}",
+      "JWT_SECRET": "${JWT_SECRET}"
+    }
+  }
+}
